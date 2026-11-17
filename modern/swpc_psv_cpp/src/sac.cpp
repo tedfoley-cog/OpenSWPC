@@ -37,6 +37,8 @@ void sac_write(const std::string& fn, const SacHeader& sh, const std::vector<flo
     out.write(reinterpret_cast<const char*>(sh.l), sizeof(sh.l));
     for (int j = 0; j < 23; ++j) out << pad(sh.k[j], j == KEVNM ? 16 : 8);
     out.write(reinterpret_cast<const char*>(dat.data()), static_cast<std::streamsize>(dat.size() * sizeof(float)));
+    out.close();
+    if (!out) throw std::runtime_error("failed writing SAC file: " + fn);
 }
 
 }  // namespace swpc
