@@ -3,7 +3,7 @@
 **Result: the C++ port reproduces the upstream Fortran solver bit-for-bit** on every scenario,
 every waveform component and every grid cell checked. Physics checks that do not use the
 Fortran code also pass. All numbers below come from `python3 -m pytest` in `validation/`
-(49 tests, about 95 s on 8 cores) and are re-generated in CI by `validation/report.py`.
+(53 tests, about 105 s on 8 cores) and are re-generated in CI by `validation/report.py`.
 
 ## 1. Approach
 
@@ -11,9 +11,9 @@ Fortran code also pass. All numbers below come from `python3 -m pytest` in `vali
 |---|---|---|
 | Routine probes (`test_routines.py`) | 8,300 evaluations of source time functions, moment tensors, Mw, grid index maps, relaxation times, map projection, seawater profile, PML profiles. Upstream Fortran objects vs C++ on identical inputs | bit-identical |
 | Full wavefield (`test_state.py`) | Every cell of `Vx, Vz, Sxx, Szz, Sxz` every 25 steps, plus all medium arrays, from an instrumented Fortran build (scratch copy; upstream source not modified) | bit-identical |
-| End-to-end (`test_differential.py`) | 23 scenarios × all SAC outputs (velocity, displacement, stress, strain); every header word except the wall-clock date | bit-identical samples, identical headers |
+| End-to-end (`test_differential.py`) | 24 scenarios × all SAC outputs (velocity, displacement, stress, strain); every header word except the wall-clock date | bit-identical samples, identical headers |
 | Determinism (`test_determinism.py`) | C++ output at 1, 2, 4 and 8 OpenMP threads; repeated runs | bit-identical |
-| Edge cases (`test_edge_cases.py`) | CFL rejection and acceptance, parser semantics, out-of-scope inputs, missing files | same accept/reject as Fortran; port fails loudly outside scope |
+| Edge cases (`test_edge_cases.py`) | CFL rejection and acceptance, parser semantics (incl. `${VAR}` in numeric parameters, `D` exponents in model/station files), out-of-scope inputs (incl. snapshot switches), missing files | same accept/reject as Fortran; port fails loudly outside scope |
 | Physics (`test_physics.py`) | Analytic solution, grid convergence, absorbing-boundary reflection, reciprocity, attenuation | thresholds in §3 |
 
 The Fortran reference is built three ways by `validation/build_fortran_ref.sh`:
@@ -24,10 +24,10 @@ The Fortran reference is built three ways by `validation/build_fortran_ref.sh`:
 
 ## 2. Fortran ↔ C++ equivalence
 
-- **End-to-end:** 900 SAC files over 23 scenarios. All 900 are bit-identical (0 ULP) with identical headers. The scenarios cover:
+- **End-to-end:** 940 SAC files over 24 scenarios. All 940 are bit-identical (0 ULP) with identical headers. The scenarios cover:
   - uniform, layered, ocean (uniform water and Munk profile), topography, full space, Earth flattening and PML stabilisation models
   - PML and Cerjan absorbers
-  - moment-tensor, strike/dip/rake, Mw and body-force sources
+  - moment-tensor, strike/dip/rake, Mw, `psmeca` and body-force sources
   - all 7 source time functions
   - anisotropic grids, a thin PML, a long run and Fortran `D`-exponent input syntax
 - **Full wavefield:** 3 scenarios (viscoelastic PML; Cerjan; layered model with Munk ocean) × 12 checkpoints, 4.67 M cell values. All bit-identical.
