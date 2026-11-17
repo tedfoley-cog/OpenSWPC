@@ -15,11 +15,14 @@ jobs:
         working-directory: modern/swpc_psv_cpp
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
       - name: Toolchain
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends gfortran g++ cmake libopenmpi-dev openmpi-bin libnetcdff-dev
-          python3 -m pip install --user numpy scipy pytest
+          python3 -m pip install -r validation/requirements.txt
       - name: Build C++ port
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build -j
       - name: Build Fortran reference (strict, upstream, instrumented)
