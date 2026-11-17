@@ -1,0 +1,41 @@
+name: swpc_psv C++ migration validation
+
+on:
+  push:
+    paths: ["modern/swpc_psv_cpp/**", "src/swpc_psv/**", "src/shared/**", ".github/workflows/swpc-psv-cpp-validation.yml"]
+  pull_request:
+    paths: ["modern/swpc_psv_cpp/**", "src/swpc_psv/**", "src/shared/**", ".github/workflows/swpc-psv-cpp-validation.yml"]
+
+jobs:
+  validate:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: modern/swpc_psv_cpp
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends gfortran g++ cmake libopenmpi-dev openmpi-bin libnetcdff-dev
+          python3 -m pip install -r validation/requirements.txt
+      - name: Build C++ port
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build -j
+      - name: Build Fortran reference (strict, upstream, instrumented)
+        run: validation/build_fortran_ref.sh
+      - name: Differential, state, routine, determinism, edge-case and physics tests
+        run: cd validation && python3 -m pytest -v
+      - name: Evidence
+        if: always()
+        run: python3 validation/report.py | tee build/validation-evidence.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: validation-evidence
+          path: |
+            modern/swpc_psv_cpp/build/validation-evidence.md
+            modern/swpc_psv_cpp/build/validation-results/
