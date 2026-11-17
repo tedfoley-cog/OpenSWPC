@@ -59,6 +59,17 @@ void check_ll(float lon, float lat) {
     require(-90.f <= lat && lat <= 90.f, "latitude out of range");
 }
 
+// Fortran real(SP)**integer: binary exponentiation in single precision (libgcc __powisf2).
+float powi_sp(float x, int m) {
+    unsigned n = m < 0 ? 0u - static_cast<unsigned>(m) : static_cast<unsigned>(m);
+    float y = (n % 2) ? x : 1.0f;
+    while (n >>= 1) {
+        x = x * x;
+        if (n % 2) y = y * x;
+    }
+    return m < 0 ? 1.0f / y : y;
+}
+
 struct RawSource {
     float sx = 0, sy = 0, sz = 0, mo = 0, mxx = 0, mzz = 0, mxz = 0, fx = 0, fz = 0;
     std::vector<float> prm;
@@ -153,9 +164,10 @@ void grid_moment(State& s, const std::string& fn, const std::string& fmt, int np
             r.mxz = static_cast<float>(v[6]);
             const int iex = static_cast<int>(v[9]);
             const double M0tmp = std::sqrt(r.mxx * r.mxx + r.mzz * r.mzz + 2 * (r.mxz * r.mxz)) / std::sqrt(2.0f);
-            r.mo = static_cast<float>(M0tmp * std::pow(10.f, iex));
+            r.mo = static_cast<float>(M0tmp * powi_sp(10.f, iex));
             r.prm[0] = 0.0f;
-            r.prm[1] = static_cast<float>(2 * 1.05 * 1e-8 * std::pow(static_cast<double>(r.mo), 1.0 / 3.0));
+            const float half_dur_coef = 2 * 1.05f * 1e-8f;  // single-precision constant, as in Fortran
+            r.prm[1] = static_cast<float>(half_dur_coef * std::pow(static_cast<double>(r.mo), 1.0 / 3.0));
             r.mo = r.mo * 1e-7f;
             r.mxx = static_cast<float>(r.mxx / M0tmp);
             r.mzz = static_cast<float>(r.mzz / M0tmp);
