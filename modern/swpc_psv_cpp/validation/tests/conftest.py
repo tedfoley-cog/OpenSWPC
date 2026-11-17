@@ -14,6 +14,9 @@ WORK = runner.ROOT / "build" / "validation-work"
 
 def pytest_configure(config):
     RESULTS.mkdir(parents=True, exist_ok=True)
+    if not hasattr(config, "workerinput"):
+        for f in RESULTS.glob("*.jsonl"):
+            f.unlink()
 
 
 @pytest.fixture(scope="session")
