@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "fdtool.hpp"
+#include "readini.hpp"
 
 namespace swpc {
 
@@ -89,8 +90,15 @@ void vmodel_lhm(State& s, const IniFile& prm) {
         for (auto& c : a)
             if (c == ',') c = ' ';
         std::istringstream ss(a);
-        float d, r, p, v, qp, qs;
-        if (!(ss >> d >> r >> p >> v >> qp >> qs)) throw std::runtime_error("vmodel_lhm: bad line: " + line);
+        std::string tk[6];
+        if (!(ss >> tk[0] >> tk[1] >> tk[2] >> tk[3] >> tk[4] >> tk[5])) throw std::runtime_error("vmodel_lhm: bad line: " + line);
+        float f6[6];
+        try {
+            for (int j = 0; j < 6; ++j) f6[j] = static_cast<float>(parse_fortran_real(tk[j]));
+        } catch (const std::exception&) {
+            throw std::runtime_error("vmodel_lhm: bad line: " + line);
+        }
+        const float d = f6[0], r = f6[1], p = f6[2], v = f6[3], qp = f6[4], qs = f6[5];
         depth.push_back(d); rho0.push_back(r); vp0.push_back(p); vs0.push_back(v); qp0.push_back(qp); qs0.push_back(qs);
     }
     const int nlayer = static_cast<int>(depth.size());

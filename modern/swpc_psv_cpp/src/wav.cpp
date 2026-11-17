@@ -7,6 +7,7 @@
 #include <stdexcept>
 
 #include "fdtool.hpp"
+#include "readini.hpp"
 #include "geomap.hpp"
 #include "sac.hpp"
 
@@ -28,9 +29,16 @@ void set_stinfo(State& s, Waveforms& w, const std::string& fn, const std::string
         for (auto& c : t)
             if (c == ',') c = ' ';
         std::istringstream ss(t);
+        std::string a1, a2, a3, stnm, zsw;
+        if (!(ss >> a1 >> a2 >> a3 >> stnm >> zsw)) throw std::runtime_error("bad station line: " + line);
         float c1, c2, zst;
-        std::string stnm, zsw;
-        if (!(ss >> c1 >> c2 >> zst >> stnm >> zsw)) throw std::runtime_error("bad station line: " + line);
+        try {
+            c1 = static_cast<float>(parse_fortran_real(a1));
+            c2 = static_cast<float>(parse_fortran_real(a2));
+            zst = static_cast<float>(parse_fortran_real(a3));
+        } catch (const std::exception&) {
+            throw std::runtime_error("bad station line: " + line);
+        }
         for (char q : {'\'', '"'}) {
             if (stnm.size() >= 2 && stnm.front() == q && stnm.back() == q) stnm = stnm.substr(1, stnm.size() - 2);
             if (zsw.size() >= 2 && zsw.front() == q && zsw.back() == q) zsw = zsw.substr(1, zsw.size() - 2);
