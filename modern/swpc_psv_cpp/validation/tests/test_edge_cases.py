@@ -105,7 +105,7 @@ def test_environment_variables_in_numeric_parameters(workdir, cpp_bin, fortran_r
 
 @pytest.mark.differential
 def test_fortran_d_exponents_in_model_and_station_files(workdir, cpp_bin, fortran_ref):
-    lhm = " 0.0D0 2.7D0 5.0D0 3.0D0 2.0D2 1.0D2\n 3.0d0 2.9 6.0E0 3.5d0 600 300\n"
+    lhm = " 0.0D0 2.7D0 5.0D0 3.0D0 2.0D2 1.0D2\n 3.0d0 2.9 6.0E0 3.5d0 600 300/ trailing note\n"
     st = ["2.0D0 0.0 1.5D0 ST01 dep", "-1.5d0 0.0d0 2.0 ST02 dep"]
     sc = Scenario("dexp", vmodel_type="lhm", lhm=lhm, stations=st, nt=150)
     out = {}

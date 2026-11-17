@@ -87,6 +87,7 @@ void vmodel_lhm(State& s, const IniFile& prm) {
     while (std::getline(in, line)) {
         std::string a = strip(line);
         if (a.empty() || a[0] == '#') continue;
+        a = a.substr(0, a.find('/'));  // list-directed '/' ends the record
         for (auto& c : a)
             if (c == ',') c = ' ';
         std::istringstream ss(a);
