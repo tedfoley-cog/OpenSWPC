@@ -71,6 +71,12 @@ std::string list_directed_token(const std::string& s0) {
     return e == std::string::npos ? s : s.substr(0, e);
 }
 
+std::string expand_env(const std::string& s);
+
+namespace {
+std::string token(const std::string& rest) { return expand_env(list_directed_token(rest)); }
+}  // namespace
+
 std::string expand_env(const std::string& s) {
     std::string out;
     for (size_t i = 0; i < s.size(); ++i) {
@@ -110,20 +116,20 @@ bool parse_fortran_logical(const std::string& tok) {
 std::string IniFile::get_string(const std::string& key, const std::string& def) const {
     std::string rest;
     if (!find_raw(key, rest)) return def;
-    return expand_env(list_directed_token(rest));
+    return token(rest);
 }
 
 double IniFile::get_double(const std::string& key, double def) const {
     std::string rest;
     if (!find_raw(key, rest)) return def;
-    return parse_fortran_real(list_directed_token(rest));
+    return parse_fortran_real(token(rest));
 }
 
 float IniFile::get_float(const std::string& key, float def) const {
     std::string rest;
     if (!find_raw(key, rest)) return def;
     return std::stof([&] {
-        std::string t = list_directed_token(rest);
+        std::string t = token(rest);
         for (auto& c : t)
             if (c == 'd' || c == 'D') c = 'e';
         return t;
@@ -133,7 +139,7 @@ float IniFile::get_float(const std::string& key, float def) const {
 int IniFile::get_int(const std::string& key, int def) const {
     std::string rest;
     if (!find_raw(key, rest)) return def;
-    const std::string t = list_directed_token(rest);
+    const std::string t = token(rest);
     size_t pos = 0;
     int v = std::stoi(t, &pos);
     if (pos != t.size()) throw std::invalid_argument("bad integer for " + key + ": " + t);
@@ -143,7 +149,7 @@ int IniFile::get_int(const std::string& key, int def) const {
 bool IniFile::get_bool(const std::string& key, bool def) const {
     std::string rest;
     if (!find_raw(key, rest)) return def;
-    return parse_fortran_logical(list_directed_token(rest));
+    return parse_fortran_logical(token(rest));
 }
 
 }  // namespace swpc
