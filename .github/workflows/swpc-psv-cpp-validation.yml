@@ -27,10 +27,8 @@ jobs:
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build -j
       - name: Build Fortran reference (strict, upstream, instrumented)
         run: validation/build_fortran_ref.sh
-      - name: Differential, state, routine, determinism and edge-case tests
-        run: cd validation && python3 -m pytest -m "not physics" -v
-      - name: Physics tests
-        run: cd validation && python3 -m pytest -m physics -v
+      - name: Differential, state, routine, determinism, edge-case and physics tests
+        run: cd validation && python3 -m pytest -v
       - name: Evidence
         if: always()
         run: python3 validation/report.py | tee build/validation-evidence.md >> "$GITHUB_STEP_SUMMARY"
