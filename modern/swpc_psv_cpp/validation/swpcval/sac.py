@@ -60,8 +60,7 @@ def header_diff(a: Sac, b: Sac, ignore_time: bool = True) -> list[str]:
     out = []
     for w in range(70):
         if a.floats[w].tobytes() != b.floats[w].tobytes():
-            if not np.isclose(a.floats[w], b.floats[w], rtol=1e-6, atol=0):
-                out.append(f"word {w + 1} ({F_NAMES.get(w + 1, '?')}): {a.floats[w]!r} != {b.floats[w]!r}")
+            out.append(f"word {w + 1} ({F_NAMES.get(w + 1, '?')}): {a.floats[w]!r} != {b.floats[w]!r}")
     for w in range(40):
         if ignore_time and (w + 71) in TIME_WORDS:
             continue
