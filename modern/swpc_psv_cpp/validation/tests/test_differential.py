@@ -58,6 +58,8 @@ SCENARIOS = [
     Scenario("src_boxcar", stftype="boxcar"),
     Scenario("src_herrmann", stftype="herrmann"),
     Scenario("src_asymcos", stftype="asymcos", sources=["0.0 0.0 3.0  0.0 0.2 0.4  1.0e15  1.0 0.0 1.0 0.0 0.0 0.0"]),
+    Scenario("src_psmeca", stf_format="psmeca",
+             sources=["139.7604 35.7182 5.0  1.2 -0.8 -0.4 0.5 0.3 -0.2 23", "139.7704 35.7182 4.0  -0.6 0.9 -0.3 -0.4 0.1 0.2 22"]),
     Scenario("src_bodyforce_z", bf_mode=True, stf_format="xy", sources=FORCE),
     Scenario("src_bodyforce_x_cerjan", bf_mode=True, stf_format="xy", sources=FORCE_X, abc_type="cerjan"),
     Scenario("grid_anisotropic", dx=0.1, dz=0.05, nz=200, dt=0.006),

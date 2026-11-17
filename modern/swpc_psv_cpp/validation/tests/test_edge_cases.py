@@ -34,6 +34,7 @@ def test_cfl_marginal_accepted_by_both(workdir, cpp_bin, fortran_ref):
     ({"vmodel_type": "'lhm_rmed'"}, "vmodel_type"),
     ({"pw_mode": ".true."}, "pw_mode"),
     ({"wav_format": "'csf'"}, "wav_format"),
+    ({"xz_v%sw": ".true."}, "snapshot"),
     ({"stf_format": "'bogus'"}, "stf_format"),
     ({"fn_stf": "'./missing.dat'"}, "cannot open"),
 ])
@@ -84,3 +85,33 @@ def test_parser_semantics_match_fortran(workdir, cpp_bin, fortran_ref):
         c = outs["cpp"][k]
         assert f.data.tobytes() == c.data.tobytes()
         assert f.i("npts") == c.i("npts") == 12  # nt=120 (first wins), ntdec_w default 10
+
+
+@pytest.mark.differential
+def test_environment_variables_in_numeric_parameters(workdir, cpp_bin, fortran_ref, monkeypatch):
+    """readini expands ${VAR} before numeric conversion, for every parameter type."""
+    monkeypatch.setenv("SWPC_TEST_NT", "120")
+    monkeypatch.setenv("SWPC_TEST_DT", "0.008")
+    sc = Scenario("envnum", nt=999, extra={"nt": "${SWPC_TEST_NT}", "dt": "${SWPC_TEST_DT}"})
+    out = {}
+    for eng in ("fortran", "cpp"):
+        runner.run(eng, sc, workdir / eng)
+        out[eng] = runner.outputs(workdir / eng)
+    assert sorted(out["fortran"]) == sorted(out["cpp"]) and out["cpp"]
+    for k, f in out["fortran"].items():
+        assert f.data.tobytes() == out["cpp"][k].data.tobytes()
+        assert f.i("npts") == out["cpp"][k].i("npts") == 60  # nt=120, ntdec_w=2
+
+
+@pytest.mark.differential
+def test_fortran_d_exponents_in_model_and_station_files(workdir, cpp_bin, fortran_ref):
+    lhm = " 0.0D0 2.7D0 5.0D0 3.0D0 2.0D2 1.0D2\n 3.0d0 2.9 6.0E0 3.5d0 600 300\n"
+    st = ["2.0D0 0.0 1.5D0 ST01 dep", "-1.5d0 0.0d0 2.0 ST02 dep"]
+    sc = Scenario("dexp", vmodel_type="lhm", lhm=lhm, stations=st, nt=150)
+    out = {}
+    for eng in ("fortran", "cpp"):
+        runner.run(eng, sc, workdir / eng)
+        out[eng] = runner.outputs(workdir / eng)
+    assert sorted(out["fortran"]) == sorted(out["cpp"]) and len(out["cpp"]) >= 2
+    for k, f in out["fortran"].items():
+        assert f.data.tobytes() == out["cpp"][k].data.tobytes()
