@@ -49,6 +49,9 @@ int main(int argc, char** argv) {
         Source src;
         Waveforms w;
         Absorber ab;
+        for (const char* k : {"xz_ps%sw", "xz_v%sw", "xz_u%sw"})
+            if (prm.get_bool(k, false))
+                throw std::runtime_error(std::string(k) + " (snapshot output) is outside the C++ port scope");
         global_setup(s, prm);
         global_setup2(s);
         medium_setup(s, prm);
