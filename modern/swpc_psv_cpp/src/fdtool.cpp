@@ -142,9 +142,9 @@ float visco_constq_zeta(int nm, float fmin, float fmax, const std::vector<float>
     float i0sum = 0.0f, i1sum = 0.0f, i2sum = 0.0f;
     for (int im = 0; im < nm; ++im) {
         const float t = ts[im];
-        i0sum += (std::log(1.0f + om_b * om_b * t * t) - std::log(1.0f + om_a * om_a * t * t)) / (2 * t);
-        i1sum += ((std::atan(om_b * t) - om_b * t / (1 + om_b * om_b * t * t)) -
-                  (std::atan(om_a * t) - om_a * t / (1 + om_a * om_a * t * t))) /
+        i0sum += (std::log(1.0f + (om_b * om_b) * (t * t)) - std::log(1.0f + (om_a * om_a) * (t * t))) / (2 * t);
+        i1sum += ((std::atan(om_b * t) - om_b * t / (1 + (om_b * om_b) * (t * t))) -
+                  (std::atan(om_a * t) - om_a * t / (1 + (om_a * om_a) * (t * t)))) /
                  (2 * t);
     }
     for (int im = 0; im < nm - 1; ++im) {
